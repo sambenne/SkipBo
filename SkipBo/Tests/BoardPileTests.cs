@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using SkipBo.App;
+using SkipBo.App.Core;
 
 namespace SkipBo.Tests
 {

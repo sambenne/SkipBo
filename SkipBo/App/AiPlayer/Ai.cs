@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using SkipBo.App.Core;
 
 namespace SkipBo.App.AiPlayer
 {
@@ -8,39 +9,32 @@ namespace SkipBo.App.AiPlayer
         public bool PlayCard()
         {
             var board = Board.Instance;
-            if (SideDeck.Count > 0)
+            if (SideDeck.TotalCards() > 0 && board.PlayCard(SideDeck.CurrentCard()))
             {
-                if (board.PlayCard(SideDeck[0]))
-                {
-                    Ui.Action($"played: {SideDeck[0].Name} from Side Deck.", "AI");
-                    SideDeck.RemoveAt(0);
-                    return true;
-                }
+                Ui.Action($"played: {SideDeck.CurrentCard().Name} from Side Deck.", "AI");
+                return SideDeck.Remove(0);
             }
 
-            if (Hand.Count == 0)
+            if (Hand.TotalCards() == 0)
             {
                 DrawHand();
                 Ui.Action("drew 5 cards.", "AI");
             }
 
-            for (var i = 0; i < Hand.Count; i++)
+            foreach (var card in Hand.Cards.Where(card => board.PlayCard(card)))
             {
-                if (board.PlayCard(Hand[i]))
-                {
-                    Ui.Action($"played: {Hand[i].Name} from Hand.", "AI");
-                    Hand.RemoveAt(i);
-                    return true;
-                }
+                Ui.Action($"played: {card.Name} from Hand.", "AI");
+                Hand.Remove(card);
+                return true;
             }
 
-            foreach (var discards in Discards.Where(x => x.Cards.Count > 0))
+            foreach (var discards in Discards.Piles.Where(x => x.Cards.Count > 0))
             {
                 var topCard = discards.Cards.Last();
                 var discardPile = HasCardInDiscards(topCard);
                 if (discardPile > -1 && board.PlayCard(topCard))
                 {
-                    Discards[discardPile].Cards.RemoveAt(Discards[discardPile].Cards.Count - 1);
+                    Discards.Piles[discardPile].Cards.RemoveAt(Discards.Piles[discardPile].Cards.Count - 1);
                     return true;
                 }
             }
@@ -50,32 +44,20 @@ namespace SkipBo.App.AiPlayer
 
         public void FindAndDiscardCard()
         {
-            if(Hand.Count > 1)
-                Hand = Hand.OrderBy(x => x.Value).ToList();
-            var last = Hand.Last();
-            var pileNumber = 0;
+            if(Hand.TotalCards() > 1)
+                Hand.OrderCards();
+            var card = Hand.Last();
 
-            if (HasCardInHand(last))
-            {
-                pileNumber = pileNumber > 0 && pileNumber < 4 ? pileNumber : 0;
+            if (!Hand.Has(card)) return;
 
-                Discards[pileNumber].Cards.Add(last);
-                Ui.Action($"discarded {last.Name} from Hand.", "AI");
-                Hand.RemoveAt(Hand.FindIndex(x => x.Value == last.Value));
-            }
+            Discards.Add(card);
+            Ui.Action($"discarded {card.Name} from Hand.", "AI");
+            Hand.Remove(card);
         }
 
         public List<string> GetDiscardsAsList()
         {
-            return Discards.Select(discard => discard.Cards.Count > 0 ? discard.Cards.Last().Name : string.Empty).ToList();
-        }
-    }
-
-    public class SmartAi : Player
-    {
-        public void PlayCard()
-        {
-            
+            return Discards.Piles.Select(discard => discard.Cards.Count > 0 ? discard.Cards.Last().Name : string.Empty).ToList();
         }
     }
 }

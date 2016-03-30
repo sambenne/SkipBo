@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using SkipBo.Tests.SmartAi;
 
-namespace SkipBo.App
+namespace SkipBo.App.Core
 {
     public class Card
     {
@@ -39,6 +38,11 @@ namespace SkipBo.App
         {
             var other = obj as Card;
             return Value == other?.Value;
+        }
+
+        public override int GetHashCode()
+        {
+            return Value;
         }
     }
 

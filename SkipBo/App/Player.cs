@@ -1,67 +1,53 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using SkipBo.App.ConsoleHelper;
+using SkipBo.App.Core;
 
 namespace SkipBo.App
 {
     public abstract class Player
     {
-        public List<Card> Hand { get; set; } = new List<Card>();
-        public List<Card> SideDeck { get; set; } = new List<Card>();
-        public List<Discard> Discards { get; set; } = new List<Discard>
-        {
-            new Discard(),
-            new Discard(),
-            new Discard(),
-            new Discard()
-        };
+        public Hand Hand { get; set; } = new Hand();
+        public SideDeck SideDeck { get; set; } = new SideDeck();
+        public Discards Discards { get; set; } = new Discards();
+
         public readonly Deck Deck = Deck.Instance;
         public readonly Ui Ui = Ui.Instance;
 
         public int DrawHand()
         {
-            if (Hand.Count == 5)
+            if (Hand.TotalCards() == 5)
                 return 0;
 
-            var totalCardsNeeded = 5 - Hand.Count;
-            var newCards = Deck.Cards.GetRange(0, totalCardsNeeded);
-            Hand.AddRange(newCards);
+            var totalCardsNeeded = 5 - Hand.TotalCards();
+            Hand.Add(Deck.Cards.GetRange(0, totalCardsNeeded));
             Deck.Cards.RemoveRange(0, totalCardsNeeded);
             return totalCardsNeeded;
         }
 
         public void FillSideDeck(int totalCards)
         {
-            SideDeck = Deck.Cards.Take(totalCards).ToList();
+            SideDeck.SetCards(Deck.Cards.Take(totalCards).ToList());
             Deck.Cards.RemoveRange(0, totalCards);
         }
 
         public bool HasCardInHand(Card card)
         {
-            return Hand.Any(x => x.Value == card.Value);
+            return Hand.Has(card);
         }
 
         public bool HasCardInSideDeck(Card card)
         {
-            return SideDeck[0].Value == card.Value;
+            return SideDeck.IsCurrentCard(card);
         }
 
         public int HasCardInDiscards(Card card)
         {
-            if (Discards[0].Cards.Count > 0 && Discards[0].Cards.Last().Value == card.Value)
-                return 0;
-            if (Discards[1].Cards.Count > 0 && Discards[1].Cards.Last().Value == card.Value)
-                return 1;
-            if (Discards[2].Cards.Count > 0 && Discards[2].Cards.Last().Value == card.Value)
-                return 2;
-            if (Discards[3].Cards.Count > 0 && Discards[3].Cards.Last().Value == card.Value)
-                return 3;
-
-            return -1;
+            return Discards.HasCard(card);
         }
 
         public bool HasWon()
         {
-            return SideDeck.Count == 0;
+            return SideDeck.TotalCards() == 0;
         }
     }
 }

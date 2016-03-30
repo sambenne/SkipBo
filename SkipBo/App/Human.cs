@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using SkipBo.App.Core;
 
 namespace SkipBo.App
 {
@@ -7,7 +8,7 @@ namespace SkipBo.App
     {
         public List<string> GetDiscardsAsList()
         {
-            return Discards.Select(discard => discard.Cards.Count > 0 ? $"{discard.Cards.Last().Name} ({discard.Cards.Count})" : string.Empty).ToList();
+            return Discards.Piles.Select(discard => discard.Cards.Count > 0 ? $"{discard.Cards.Last().Name} ({discard.Cards.Count})" : string.Empty).ToList();
         }
 
         public bool PlayCard(Card card, string pile)
@@ -22,7 +23,7 @@ namespace SkipBo.App
             {
                 playCard = pileCount > -1 ? board.PlayCard(card, pileCount) : board.PlayCard(card);
                 if (playCard)
-                    SideDeck.RemoveAt(0);
+                    SideDeck.Remove(0);
 
                 return playCard;
             }
@@ -31,7 +32,7 @@ namespace SkipBo.App
             {
                 playCard = pileCount > -1 ? board.PlayCard(card, pileCount) : board.PlayCard(card);
                 if (playCard)
-                    Hand.RemoveAt(Hand.FindIndex(x => x.Value == card.Value));
+                    Hand.Remove(card);
             }
 
             var discardPile = HasCardInDiscards(card);
@@ -39,7 +40,7 @@ namespace SkipBo.App
             {
                 playCard = pileCount > -1 ? board.PlayCard(card, pileCount) : board.PlayCard(card);
                 if (playCard)
-                    Discards[discardPile].Cards.RemoveAt(Discards[discardPile].Cards.Count - 1);
+                    Discards.Remove(pileCount);
             }
 
             return playCard;
@@ -47,33 +48,19 @@ namespace SkipBo.App
 
         public bool DiscardCard(Card card, string pile)
         {
-            if (HasCardInHand(card))
-            {
-                if (pile == "")
-                {
-                    if (Discards[0].Cards.Count == 0)
-                        Discards[0].Cards.Add(card);
-                    else if (Discards[1].Cards.Count == 0)
-                        Discards[1].Cards.Add(card);
-                    else if (Discards[2].Cards.Count == 0)
-                        Discards[2].Cards.Add(card);
-                    else if (Discards[3].Cards.Count == 0)
-                        Discards[3].Cards.Add(card);
-                    else
-                        Discards[0].Cards.Add(card);
-                }
-                else
-                {
-                    var pileNumber = pile == "" ? 0 : int.Parse(pile);
-                    pileNumber--;
-                    pileNumber = pileNumber > 0 && pileNumber < 4 ? pileNumber : 0;
+            if (!Hand.Has(card)) return false;
 
-                    Discards[pileNumber].Cards.Add(card);
-                }
-                Hand.RemoveAt(Hand.FindIndex(x => x.Value == card.Value));
-                return true;
+            if (pile == "")
+                Discards.Add(card);
+            else
+            {
+                var pileNumber = pile == "" ? 0 : int.Parse(pile);
+                pileNumber--;
+                pileNumber = pileNumber > 0 && pileNumber < 4 ? pileNumber : 0;
+
+                Discards.Add(card, pileNumber);
             }
-            return true;
+            return Hand.Remove(card);
         }
     }
 }

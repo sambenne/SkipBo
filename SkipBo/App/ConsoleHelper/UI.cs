@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using SkipBo.App.AiPlayer;
+using SkipBo.App.Core;
 
-namespace SkipBo.App
+namespace SkipBo.App.ConsoleHelper
 {
     public class Ui
     {
@@ -43,20 +43,16 @@ namespace SkipBo.App
             Console.Clear();
             if (HasWon())
                 return;
-            BuildAiPlayer(false);
+            BuildAiPlayer(true);
 
-            BuildPlayerDiscards(40);
+            BuildPlayerDiscards(40, 0, Player.Discards, ConsoleColor.DarkGreen);
             const int left = 0;
 
             Write(left, 0, "Side Deck:");
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Write(11, 0, $"[{Player.SideDeck[0].Name}]");
-            Console.ResetColor();
-            Write(16, 0, $"({Player.SideDeck.Count} left)");
+            Write(11, 0, $"[{Player.SideDeck.CurrentCard().Name}]", ConsoleColor.DarkGreen);
+            Write(16, 0, $"({Player.SideDeck.TotalCards()} left)");
             Write(left, 1, "Hand:");
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Write(6, 1, Player.Hand.Aggregate("", (current, t) => current + $"[{t.Name}] "));
-            Console.ResetColor();
+            Write(6, 1, Player.Hand.Cards.Aggregate("", (current, t) => current + $"[{t.Name}] "), ConsoleColor.DarkGreen);
             Write(left, 4, "Board");
             Console.ForegroundColor = ConsoleColor.Blue;
             Write(left, 5, $"[{string.Join("][", _board.GetTopCards())}]");
@@ -88,42 +84,47 @@ namespace SkipBo.App
             const int left = 70;
             Write(left, 0, "AI");
             Write(left, 1, "----------------------");
-            Write(left, 2, $"D:{Ai.SideDeck[0].Name} ({Ai.SideDeck.Count} left)");
+            Write(left, 2, $"D:{Ai.SideDeck.CurrentCard().Name} ({Ai.SideDeck.TotalCards()} left)");
             if (debug)
             {
-                Write(left, 3, Ai.Hand.Aggregate("Hand: ", (current, t) => current + $"[{t.Name}] "));
+                Write(left, 3, Ai.Hand.Cards.Aggregate("Hand: ", (current, t) => current + $"[{t.Name}] "));
+                BuildPlayerDiscards(left, 4, Ai.Discards, ConsoleColor.White);
             }
-            Write(left, debug ? 4 : 3, $"Discard: [{string.Join("][", Ai.GetDiscardsAsList())}]");
+            else
+            {
+                Write(left, 3, $"Discard: [{string.Join("][", Ai.GetDiscardsAsList())}]");
+            }
         }
 
-        private static void Write(int left, int top, string message)
+        public static void Write(int left, int top, string message)
+        {
+            Write(left, top, message, ConsoleColor.White);
+        }
+
+        public static void Write(int left, int top, string message, ConsoleColor colour)
         {
             Console.SetCursorPosition(left, top);
+            Console.ForegroundColor = colour;
             Console.Write(message);
+            Console.ResetColor();
         }
 
-        private void BuildPlayerDiscards(int left)
+        private static void BuildPlayerDiscards(int left, int top, Discards discards, ConsoleColor colour)
         {
-            Write(left, 0, "Discards:");
+            Write(left, top, "Discards:");
             left += 10;
             var column = 0;
-            foreach (var discardPile in Player.Discards)
+            foreach (var discardPile in discards.Piles)
             {
-                var row = 0;
+                var row = top;
                 var leftPosition = left + (column * 5);
                 discardPile.Cards.Reverse();
                 foreach (var card in discardPile.Cards)
                 {
-                    if (row == 0)
-                    {
-                        Console.ForegroundColor = ConsoleColor.DarkGreen;
-                        Write(leftPosition, row, $"[{card.Name}]");
-                        Console.ResetColor();
-                    }
+                    if (row == top)
+                        Write(leftPosition, row, $"[{card.Name}]", colour);
                     else
-                    {
                         Write(leftPosition, row, $"[{card.Name}]");
-                    }
                     row++;
                 }
                 discardPile.Cards.Reverse();
@@ -150,6 +151,20 @@ namespace SkipBo.App
             ActionHistory.Add($"Error - {message}");
             ActionHistory.Add($"{stackTrace}");
             CreatePlayScreen();
+        }
+
+        public static void GetInput(Func<string, bool> action)
+        {
+            string line;
+            var isRunning = true;
+
+            while (isRunning && !string.IsNullOrEmpty(line = Console.ReadLine()))
+            {
+                if (line == "quit")
+                    Environment.Exit(0);
+
+                isRunning = action.Invoke(line);
+            }
         }
     }
 }

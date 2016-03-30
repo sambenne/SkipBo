@@ -49,20 +49,31 @@
   <ItemGroup>
     <Compile Include="App\AiPlayer\Ai.cs" />
     <Compile Include="App\AiPlayer\Brain.cs" />
-    <Compile Include="App\Board.cs" />
-    <Compile Include="App\Card.cs" />
-    <Compile Include="App\Deck.cs" />
-    <Compile Include="App\Discard.cs" />
-    <Compile Include="App\Input.cs" />
-    <Compile Include="App\ParseInput.cs" />
+    <Compile Include="App\AiPlayer\SmartAi.cs" />
+    <Compile Include="App\AiPlayer\Strategies\IStrategy.cs" />
+    <Compile Include="App\AiPlayer\Strategies\SideDeckStrategy.cs" />
+    <Compile Include="App\AiPlayer\Strategies\Strategy.cs" />
+    <Compile Include="App\Core\Board.cs" />
+    <Compile Include="App\Core\BoardPile.cs" />
+    <Compile Include="App\Core\Card.cs" />
+    <Compile Include="App\Core\Deck.cs" />
+    <Compile Include="App\Core\Discard.cs" />
+    <Compile Include="App\Core\Discards.cs" />
+    <Compile Include="App\Core\Game.cs" />
+    <Compile Include="App\Core\Hand.cs" />
+    <Compile Include="App\ConsoleHelper\Input.cs" />
+    <Compile Include="App\ConsoleHelper\ParseInput.cs" />
+    <Compile Include="App\Core\SideDeck.cs" />
     <Compile Include="App\Human.cs" />
     <Compile Include="App\Player.cs" />
     <Compile Include="App\Program.cs" />
-    <Compile Include="App\UI.cs" />
+    <Compile Include="App\ConsoleHelper\UI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tests\BoardPileTests.cs" />
+    <Compile Include="Tests\Core\HandTests.cs" />
     <Compile Include="Tests\SmartAi\FindCardInDiscardsTests.cs" />
     <Compile Include="Tests\SmartAi\FindSequenceTests.cs" />
+    <Compile Include="Tests\SmartAi\SideDeckStrategyTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

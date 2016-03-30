@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using SkipBo.App.Core;
 
 namespace SkipBo.App.AiPlayer
 {
