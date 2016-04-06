@@ -6,7 +6,7 @@ using SkipBo.App.Core;
 namespace SkipBo.Tests.SmartAi
 {
     [TestFixture]
-    public class SideDeckStrategyTests
+    public class SimpleSideDeckStrategyTests
     {
         private SideDeckStrategy _subject;
         private Board _board;
@@ -18,18 +18,18 @@ namespace SkipBo.Tests.SmartAi
             _player = new App.AiPlayer.SmartAi();
             _board = Board.Fake();
             _board.BoardPiles[0] = new BoardPile { CardPile = new List<Card> { Card.From(1) } };
-            _board.BoardPiles[1] = new BoardPile { CardPile = new List<Card> { Card.From(5) } };
 
             _player.SideDeck = new SideDeck();
-            _player.SideDeck.SetCards(new List<Card> { Card.From(4), Card.From(9) });
-            _player.Hand = Hand.From("2,3,4,5,6");
+            _player.SideDeck.SetCards(new List<Card> { Card.From(2), Card.From(12) });
+            _player.Hand = Hand.From("3,4,5,6,7");
 
             _subject = new SideDeckStrategy
             {
-                Hand = Hand.From("2,3,4,5,6"),
+                Hand = _player.Hand,
                 Discards = new List<List<Card>>(),
                 Board = _board,
-                Player = new App.AiPlayer.SmartAi()
+                Player = _player,
+                SideDeck = _player.SideDeck
             };
 
             _subject.Execute();
@@ -38,7 +38,7 @@ namespace SkipBo.Tests.SmartAi
         [Test]
         public void Test()
         {
-            Assert.That(_board.BoardPiles[0].GetCurrentValue(), Is.EqualTo(6));
+            Assert.That(_subject.Sequence.Plays.Count, Is.EqualTo(1));
         }
     }
 }

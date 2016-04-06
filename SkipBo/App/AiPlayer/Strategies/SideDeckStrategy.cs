@@ -21,7 +21,7 @@ namespace SkipBo.App.AiPlayer.Strategies
             if (CanPlaySideDeckCard())
             {
                 // Play the side deck card
-                Player.RemoveSideDeckCard();
+                Sequence.Add(new Play(SideDeck.CurrentCard(), BoardLocation.SideDeck));
             }
             else
             {
@@ -37,16 +37,16 @@ namespace SkipBo.App.AiPlayer.Strategies
 
         public bool CanPlaySideDeckCard()
         {
-            return Board.BoardPiles.Any(pile => pile.GetCurrentValue() + 1 == SideDeck.Value);
+            return Board.BoardPiles.Any(pile => pile.GetCurrentValue() + 1 == SideDeck.CurrentCard().Value);
         }
 
         public SideDeckInformation SideDeckCardNeedsMoreCards()
         {
             var response = new SideDeckInformation();
 
-            foreach (var boardPile in Board.BoardPiles.Where(x => x.GetCurrentValue() + 1 < SideDeck.Value))
+            foreach (var boardPile in Board.BoardPiles.Where(x => x.GetCurrentValue() + 1 < SideDeck.CurrentCard().Value))
             {
-                var totalCardsNeeded = SideDeck.Value - boardPile.GetCurrentValue();
+                var totalCardsNeeded = SideDeck.CurrentCard().Value - boardPile.GetCurrentValue();
                 if (response.CardsNeeded == 0 || totalCardsNeeded < response.CardsNeeded)
                 {
                     response.CardsNeeded = totalCardsNeeded - 1;
@@ -60,7 +60,7 @@ namespace SkipBo.App.AiPlayer.Strategies
 
     public class SideDeckInformation
     {
-        public bool CanPlay { get; set; } = false;
+        public bool CanPlay { get; set; }
         public int CardsNeeded { get; set; }
     }
 }
